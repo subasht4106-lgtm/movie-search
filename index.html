@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Search App</title>
+  
+</head>
+<body>
+  <header>
+    <h1>🎬 Movie Search App</h1>
+    <input type="text" id="searchInput" placeholder="Search for a movie..." />
+    <button id="searchBtn" onclick="searchMovies()">Search</button>
+
+
+    <div id="suggestions">
+      <div class="suggestion-btn">Avengers</div>
+      <div class="suggestion-btn">Inception</div>
+      <div class="suggestion-btn">Interstellar</div>
+      <div class="suggestion-btn">Joker</div>
+      <div class="suggestion-btn">Titanic</div>
+    </div>
+  </header>
+
+  <main id="movieContainer"></main>
+
+  <style>
+    
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: white;
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: #1f1f1f;
+}
+
+header h1 {
+  margin-bottom: 10px;
+}
+
+input {
+  padding: 10px;
+  width: 250px;
+  border: none;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  background: #ff4444;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #cc0000;
+}
+
+#suggestions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.suggestion-btn {
+  background: #333;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.suggestion-btn:hover {
+  background: #555;
+}
+
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+.movie-card {
+  background: #1f1f1f;
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: center;
+  padding: 10px;
+}
+
+.movie-card img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.movie-card h3 {
+  margin: 10px 0 5px;
+}
+
+.movie-card p {
+  font-size: 14px;
+  color: #aaa;
+}
+  
+  </style>
+<script>
+  const API_KEY = "2f2a80b";
+const API_URL = "https://www.omdbapi.com/";
+
+// Search movies
+function searchMovies() {
+    const query = document.getElementById("searchInput").value.trim();
+
+    if (!query) {
+        alert("Please enter a movie name!");
+        return;
+    }
+
+    fetch(`${API_URL}?apikey=${API_KEY}&s=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.Response === "True") {
+                displayMovies(data.Search);
+            } else {
+                document.getElementById("movieContainer").innerHTML =
+                    "<h2>No movies found!</h2>";
+            }
+        });
+}
+
+// Display movies
+function displayMovies(movies) {
+    const container = document.getElementById("movieContainer");
+    container.innerHTML = "";
+
+    movies.forEach(movie => {
+        const card = `
+            <div class="movie-card" onclick="getMovieDetails('${movie.imdbID}')">
+                <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/200'}">
+                <div class="movie-title">${movie.Title}</div>
+                <div class="movie-year">${movie.Year}</div>
+            </div>
+        `;
+        container.innerHTML += card;
+    });
+}
+
+// Get movie details
+function getMovieDetails(id) {
+    fetch(`${API_URL}?apikey=${API_KEY}&i=${id}&plot=full`)
+        .then(res => res.json())
+        .then(movie => showModal(movie));
+}
+
+// Show modal
+function showModal(movie) {
+    document.getElementById("modalDetails").innerHTML = `
+        <h2>${movie.Title} (${movie.Year})</h2>
+        <div class="movie-details">
+            <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/200'}">
+            <div class="movie-info">
+                <p><strong>Genre:</strong> ${movie.Genre}</p>
+                <p><strong>Director:</strong> ${movie.Director}</p>
+                <p><strong>Actors:</strong> ${movie.Actors}</p>
+                <p><strong>Plot:</strong> ${movie.Plot}</p>
+                <p><strong>IMDB Rating:</strong> ⭐ ${movie.imdbRating}</p>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("modal").style.display = "flex";
+}
+
+// Close modal
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+// Example suggestion click
+const searchInput = document.getElementById('searchInput');
+const buttons = document.querySelectorAll('.suggestion-btn');
+const searchBtn = document.getElementById('searchBtn');
+
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    searchInput.value = btn.textContent;
+    searchBtn.click();
+  });
+});
+</script>
+
+</body>
+</html>
